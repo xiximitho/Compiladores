@@ -29,7 +29,7 @@ Fedora: dnf install gtkmm4.0-devel cmake make clang
    ```
 3. Gere os arquivos para realização do Make e Make install (CMake sempre pega o diretório atual para geração)
    ```sh
-   CMake ..
+   cmake ..
    ```   
 4. Compilação dos arquivos
    ```sh
