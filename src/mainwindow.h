@@ -16,16 +16,26 @@ public:
   ~MainWindow() override;
 
 protected:
-  // Sinais
-  void on_click_m_Button_Quit();
+  // Eventos para connect
+  void on_click_m_button_limpar();
+  void on_response_m_infobar(int response);
+  void on_changed_m_reftextbuffer();
+
+  // Widgets.
+  Gtk::Box m_VBox;
+  Gtk::ScrolledWindow m_scrolledWindow;
+  Gtk::TextView m_textView;
+  Gtk::InfoBar m_infoBar;
+  Gtk::Label m_label_Mensagem;
+  Gtk::Box m_buttonBox;
+  Gtk::Button m_button_Fechar, m_button_Limpar;
+
+  // Para acessar o buffer de texto.
+  Glib::RefPtr<Gtk::TextBuffer> m_refTextBuffer;
 
 private:
   void set_layout();
   void set_slots();
-
-  // Componentes
-  Gtk::Box m_VBox;
-  Gtk::ScrolledWindow m_scrolledWindow;
 };
 
 #endif //_MAINWINDOW_H_
