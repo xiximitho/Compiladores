@@ -1,3 +1,6 @@
+#Diretório de geração do CMAKE
+build
+
 # Prerequisites
 *.d
 
