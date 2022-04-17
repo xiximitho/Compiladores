@@ -2,13 +2,15 @@
 // Created by felipe on 15/04/2021.
 //
 #include "mainwindow.h"
+#include "lexico.h"
 
 MainWindow::~MainWindow() = default;
 
 MainWindow::MainWindow()
     : m_VBox(Gtk::Orientation::VERTICAL, 6),
       m_button_Fechar("_Fechar", true),
-      m_button_Limpar("_Limpar", true)
+      m_button_Limpar("_Limpar", true),
+      m_button_Analisar("_Analisar", true)
 {
   set_layout();
   set_slots();
@@ -39,8 +41,12 @@ void MainWindow::set_layout()
 
   // buttonBox
   m_VBox.append(m_buttonBox);
+  m_buttonBox.append(m_button_Analisar);
   m_buttonBox.append(m_button_Limpar);
   m_buttonBox.append(m_button_Fechar);
+
+  // Desabilitado , habilitar somente quando houve texto para ser analisado.
+  m_button_Analisar.set_sensitive(false);
 
   m_buttonBox.set_spacing(6);
   m_button_Limpar.set_hexpand(true);
@@ -55,12 +61,14 @@ void MainWindow::set_slots()
   m_button_Limpar.signal_clicked().connect(sigc::mem_fun(*this, &MainWindow::on_click_m_button_limpar));
   m_infoBar.signal_response().connect(sigc::mem_fun(*this, &MainWindow::on_response_m_infobar));
   m_refTextBuffer->signal_changed().connect(sigc::mem_fun(*this, &MainWindow::on_changed_m_reftextbuffer));
+  m_button_Analisar.signal_clicked().connect (sigc::mem_fun (*this, &MainWindow::on_click_m_button_analisar));
 }
 
 void MainWindow::on_changed_m_reftextbuffer()
 {
   // Só fica habilitado quando há algo em buffer.
   m_button_Limpar.set_sensitive(m_refTextBuffer->size() > 0);
+  m_button_Analisar.set_sensitive(m_refTextBuffer->size() > 0);
 }
 
 void MainWindow::on_response_m_infobar(int)
@@ -76,4 +84,18 @@ void MainWindow::on_click_m_button_limpar()
   m_label_Mensagem.set_text("Texto limpo");
   m_infoBar.set_message_type(Gtk::MessageType::INFO);
   m_infoBar.show();
+}
+void MainWindow::on_click_m_button_analisar ()
+{
+  Lexico analisador;
+
+  analisador.identificar(m_refTextBuffer->get_text ());
+
+  if (analisador.last_cond_token() == analisador.If){
+    m_label_Mensagem.set_text ("Encontrou um If");
+    m_infoBar.set_message_type(Gtk::MessageType::INFO);
+    m_infoBar.show();
+  }
+
+
 }

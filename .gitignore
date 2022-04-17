@@ -1,5 +1,7 @@
 #Diretório de geração do CMAKE
 build
+cmake-build-debug
+cmake-build-release
 
 # Prerequisites
 *.d

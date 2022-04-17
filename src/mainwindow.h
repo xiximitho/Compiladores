@@ -20,6 +20,7 @@ protected:
   void on_click_m_button_limpar();
   void on_response_m_infobar(int response);
   void on_changed_m_reftextbuffer();
+  void on_click_m_button_analisar();
 
   // Widgets.
   Gtk::Box m_VBox;
@@ -28,10 +29,14 @@ protected:
   Gtk::InfoBar m_infoBar;
   Gtk::Label m_label_Mensagem;
   Gtk::Box m_buttonBox;
-  Gtk::Button m_button_Fechar, m_button_Limpar;
+  Gtk::Button m_button_Fechar, m_button_Limpar, m_button_Analisar;
 
   // Para acessar o buffer de texto.
   Glib::RefPtr<Gtk::TextBuffer> m_refTextBuffer;
+
+  //Iterador de texto
+  Gtk::TextBuffer::iterator m_iteTextBuffer;
+
 
 private:
   void set_layout();
