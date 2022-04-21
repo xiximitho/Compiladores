@@ -89,13 +89,10 @@ void MainWindow::on_click_m_button_analisar ()
 {
   Lexico analisador;
 
-  analisador.identificar(m_refTextBuffer->get_text ());
+  analisador.parse (m_refTextBuffer->get_text ().c_str());
 
-  if (analisador.last_cond_token() == analisador.If){
-    m_label_Mensagem.set_text ("Encontrou um If");
+    m_label_Mensagem.set_text ("TESTEE");
     m_infoBar.set_message_type(Gtk::MessageType::INFO);
     m_infoBar.show();
-  }
-
 
 }
