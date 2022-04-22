@@ -1,4 +1,4 @@
-set(SOURCE_FILES main.cpp mainwindow.cpp mainwindow.h lexico.cpp lexico.h token.cpp token.h)
+set(SOURCE_FILES main.cpp mainwindow.cpp mainwindow.h lexico.cpp lexico.h)
 
 message(STATUS "----- GTKMM4_INCLUDE_DIRS: ${GTKMM_INCLUDE_DIRS}")
 message(STATUS "----- GTKMM4_LIBRARIES: ${GTKMM_LIBRARIES}")

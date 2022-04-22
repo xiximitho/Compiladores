@@ -4,7 +4,6 @@
 #ifndef _LEXICO_H_
 #define _LEXICO_H_
 
-#include "token.h"
 #include <glibmm/refptr.h>
 #include <gtkmm/textbuffer.h>
 
