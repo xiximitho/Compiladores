@@ -7,23 +7,37 @@
 #include <glibmm/refptr.h>
 #include <gtkmm/textbuffer.h>
 
+class Token{
+    enum Tipo{
+        OP_MAIS = 0,
+        OP_MENOS = 1,
+        OP_DIV   = 2,
+        OP_MULT  = 3,
+    };
+    Glib::ustring conteudo;
+};
+
 class Lexico {
 public:
-  ~Lexico();
-  Lexico();
+    ~Lexico();
+    Lexico();
 
-  void parse(const char *str);
-
+    static void parse(gchar *str);
+    std::vector<Token> get_tokens();
 private:
-  bool ehSimbolo(char ch);
-  bool identificadorValido(char *str);
-  bool ehOperador(char ch);
-  bool ehReservada(char *str);
-  bool ehNumero(char* str);
-  bool ehEspecial(char ch);
-  bool ehRelacional(char esquerda, char direita);
-  bool ehAtribuicao(char esquerda, char direita);
-  char *subString(const char *baseStr, int l, int r);
+    std::vector<Token> analisados;
+
+    static bool ehSimbolo(gchar ch);
+    static bool identificadorValido(gchar *str);
+    static bool ehOperador(gchar ch);
+    static bool ehReservada(gchar *str);
+    static bool ehNumero(gchar *str);
+    static bool ehEspecial(gchar ch);
+    static bool ehEspaco(gchar chr);
+    static int ehString(gchar *str);
+    static bool ehRelacional(gchar esquerda, gchar direita);
+    static bool ehAtribuicao(gchar esquerda, gchar direita);
+    static gchar *subString(const gchar *baseStr, int primeiro, int ultimo);
 };
 
 #endif //_LEXICO_H_

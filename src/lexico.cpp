@@ -1,40 +1,27 @@
 //
-// Created by felipe on 4/17/22.
+// Created by felipe on 4/16/22.
 //
-
 #include "lexico.h"
-#include <ctype.h>
-#include <fstream>
-#include <iostream>
-#include <stdlib.h>
-#include <string.h>
+#include <cstring>
 
-using namespace std;
-
-Lexico::~Lexico()
-{}
-
-Lexico::Lexico()
-{}
-
-/*Verifica se é algum dos caracteres abaixo, ou seja, que possuem alguma ação diferente de chars e digitos.*/
-bool Lexico::ehSimbolo(char ch)
+bool Lexico::ehSimbolo(gchar ch)
 {
     if (ch == ' ' || ch == '+' || ch == '-' || ch == '*' || ch == '/' ||
         ch == ',' || ch == ';' || ch == '>' || ch == '<' || ch == '=' ||
-        ch == '(' || ch == ')' || ch == ':' ) {
+        ch == '(' || ch == ')' || ch == ':') {
         return true;
     }
     return false;
 }
-bool Lexico::identificadorValido(char *str)
+bool Lexico::identificadorValido(gchar *str)
 {
     if (str[0] == '0' || str[0] == '1' || str[0] == '2' || str[0] == '3' ||
         str[0] == '4' || str[0] == '5' || str[0] == '6' || str[0] == '7' ||
-        str[0] == '8' || str[0] == '9' || ehSimbolo(str[0]) == true) {
+        str[0] == '8' || str[0] == '9' || ehSimbolo(str[0])) {
         return false;
     } // Se o primeiro caractere da string for digito ou pontuacao o identificador não é valido.
-    int i, len = strlen(str);
+    int i;
+    unsigned long len = strlen(str);
     if (len == 1) {
         return true;
     } // Se o tamanho da string = 1 a validação ja foi feita.
@@ -42,14 +29,14 @@ bool Lexico::identificadorValido(char *str)
         for (i = 1; i < len;
              i++) // Identificador não pode conter caractere especiais.
         {
-            if (ehSimbolo(str[i]) == true) {
+            if (ehSimbolo(str[i])) {
                 return false;
             }
         }
     }
     return true;
 }
-bool Lexico::ehOperador(char ch)
+bool Lexico::ehOperador(gchar ch)
 {
     if (ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '>' ||
         ch == '<' || ch == '=') {
@@ -58,17 +45,18 @@ bool Lexico::ehOperador(char ch)
     return false;
 }
 
-bool Lexico::ehEspecial(char ch)
+bool Lexico::ehEspecial(gchar ch)
 {
     if (ch == '(' || ch == ')') {
         return true;
     }
     return false;
 }
-bool Lexico::ehReservada(char *str)
+bool Lexico::ehReservada(gchar *str)
 {
     if (strcmp(str, "if") == 0 || strcmp(str, "then") == 0 ||
         strcmp(str, "else") == 0 || strcmp(str, "case") == 0 ||
+        strcmp(str, "or") == 0 || strcmp(str, "and") == 0 ||
         strcmp(str, "for") == 0 || strcmp(str, "end") == 0 ||
         strcmp(str, "in") == 0 || strcmp(str, "begin") == 0 ||
         strcmp(str, "float") == 0 || strcmp(str, "double") == 0 ||
@@ -82,21 +70,29 @@ bool Lexico::ehReservada(char *str)
     }
 }
 
-bool Lexico::ehNumero(char *str)
+bool Lexico::ehNumero(gchar *str)
 {
     int i;
-    int len = strlen(str);
+    unsigned long len = strlen(str);
+    int ponto = 0;
     int nDecimal = 0;
 
     if (len == 0) {
         return false;
     }
     for (i = 0; i < len; i++) {
-        if (nDecimal > 1 && str[i] == '.') {
+        if (ponto > 1) {
             return false;
         }
-        else if (nDecimal <= 1) {
+        if (nDecimal < 1 && str[i] == '.') {
+            return false;
+        }
+        if (nDecimal <= 1) {
             nDecimal++;
+        }
+        if (str[i] == '.') {
+            i++;
+            ponto++;
         }
         // Caso a string passada *str não possuir estes caracteres 0-9 não é
         // considerada numero.
@@ -109,80 +105,105 @@ bool Lexico::ehNumero(char *str)
     return true;
 }
 
-char *Lexico::subString(const char *baseStr, int l, int r)
+gchar * Lexico::subString(const gchar *baseStr, int primeiro, int ultimo)
 {
     int i;
-    char *str = (char *) malloc(sizeof(char) * (r - l + 2));
-    for (i = l; i <= r; i++) {
-        str[i - l] = baseStr[i];
-        str[r - l + 1] = '\0';
+    auto *str = (gchar *) malloc(sizeof(gchar) * (ultimo - primeiro + 2));
+    for (i = primeiro; i <= ultimo; i++) {
+        str[i - primeiro] = baseStr[i];
+        str[ultimo - primeiro + 1] = '\0';
     }
     return str;
 }
 
-void Lexico::parse(const char *str)
+//Identifica \n e \t para ser trocado para espaço
+
+bool Lexico::ehEspaco(gchar chr)
+{
+    return (chr == '\n' || chr == '\t');
+}
+
+int Lexico::ehString(gchar *str)
+{
+    //0 - Nenhuma aspa dupla, 1 - Somente uma aspa dupla, 2 = Duas aspas duplas (String)
+    short sum = 0;
+    unsigned long tamanho = strlen(str);
+    for (int i = 0; i < tamanho; ++i) {
+        if (str[i] == '"')
+            sum++;
+    }
+    return sum;
+}
+void Lexico::parse(gchar *str)
 {
     int atual = 0, proximo = 0;
-    int len = strlen(str);
+    unsigned long len = strlen(str);
     while (proximo <= len && atual <= proximo) {
+        if (ehEspaco(str[proximo])) {
+            str[proximo] = ' ';
+        }
         // Caso o caractere é um digito ou letra
-        if (ehSimbolo(str[proximo]) == false) {
+        if (!ehSimbolo(str[proximo])) {
             proximo++;
         }
 
-        if (ehSimbolo(str[proximo]) == true &&
-            atual == proximo) // if character is a punctuator
+        if (ehSimbolo(str[proximo]) &&
+            atual == proximo) // verifica se é um caractere de simbolos
         {
-            if (ehRelacional(str[atual], str[proximo + 1])){
-                std::cout << str[atual] << str[proximo+1] << " EH RELACIONAL\n";
-                proximo = proximo+2;
+            if (ehRelacional(str[atual], str[proximo + 1])) {
+                g_print("%c%c EH RELACIONAL\n", str[atual], str[proximo + 1]);
+                proximo = proximo + 2;
                 atual = proximo;
             }
-            else if(ehAtribuicao(str[atual], str[proximo + 1])){
-                std::cout << str[atual] << str[proximo+1] << " EH OPERADOR DE ATRIBUIÇÃO\n";
-                proximo = proximo+2;
+            else if (ehAtribuicao(str[atual], str[proximo + 1])) {
+                g_print("%c%c EH OPERADOR DE ATRIBUIÇÃO\n", str[atual], str[proximo + 1]);
+                proximo = proximo + 2;
                 atual = proximo;
             }
             else {
-                if (ehOperador(str[proximo]) == true) {
-                    std::cout << str[proximo] << " EH OPERADOR\n";
+                if (ehOperador(str[proximo])) {
+                    g_print("%c EH OPERADOR\n", str[proximo]);
                 }
 
-                if (ehEspecial(str[proximo])){
-                    std::cout << str[proximo] << " EH CARACTERE ESPECIAL\n";
+                if (ehEspecial(str[proximo])) {
+                    g_print("%c EH CARACTERE ESPECIAL\n", str[proximo]);
                 }
                 proximo++;
                 atual = proximo;
             }
         }
-        else if (ehSimbolo(str[proximo]) == true && atual != proximo ||
-            (proximo == len &&
-                atual != proximo)) // check if parsed substring is a keyword or
-            // identifier or number
-        {
-            char *sub = subString(str, atual, proximo - 1); // extract substring
-
-            if (ehReservada(sub) == true) {
-                cout << sub << " PALAVRA_RESERVADA\n";
+        else if (ehSimbolo(str[proximo]) && atual != proximo ||
+                 (proximo == len
+                  && atual != proximo)) {
+            gchar *sub = subString(str, atual, proximo - 1);
+            // Verifica se a substring é uma palavra reservada, identificador, string ou numero
+            if (ehReservada(sub)) {
+                g_print("%s PALAVRA_RESERVADA\n", sub);
             }
-            else if (ehNumero(sub) == true) {
-                cout << sub << " NUMERO\n";
+            else if (ehNumero(sub)) {
+                g_print("%s NUMERO\n", sub);
             }
-            else if (identificadorValido(sub) == true &&
-                ehSimbolo(str[proximo - 1]) == false) {
-                cout << sub << " IDENTIFICADOR VALIDO\n";
+            else if (ehString(sub) == 2) {
+                g_print("%s EH STRING\n", sub);
             }
-            else if (identificadorValido(sub) == false &&
-                ehSimbolo(str[proximo - 1]) == false) {
-                cout << sub << " NAO EH UM IDENTIFICADOR VALIDO\n";
+            else if (identificadorValido(sub) &&
+                     ehString(sub) == 0 &&
+                     !ehReservada(sub) &&
+                     !ehSimbolo(str[proximo - 1])) {
+                g_print("%s IDENTIFICADOR VALIDO\n", sub);
+            }
+            else if (!identificadorValido(sub) &&
+                     ehString(sub) != 0 || ehString(sub) != 2 &&
+                                           !ehReservada(sub) &&
+                                           !ehSimbolo(str[proximo - 1])) {
+                g_print("%s NAO EH UM IDENTIFICADOR VALIDO\n", sub);
             }
 
             atual = proximo;
         }
     }
-    return;
 }
-bool Lexico::ehRelacional(char esquerda, char direita)
+bool Lexico::ehRelacional(gchar esquerda, gchar direita)
 {
     if (esquerda == '<') {
         if (direita == '>') //Diferente
@@ -190,18 +211,27 @@ bool Lexico::ehRelacional(char esquerda, char direita)
 
         if (direita == '=') //Menor ou Igual
             return true;
-    } else if (esquerda == '>'){
+    }
+    else if (esquerda == '>') {
         if (direita == '=') // Maior ou Igual;
             return true;
     }
     return false;
 }
 
-bool Lexico::ehAtribuicao(char esquerda, char direita)
+bool Lexico::ehAtribuicao(gchar esquerda, gchar direita)
 {
     if (esquerda == ':') {
         if (direita == '=') //Atribuição
             return true;
     }
     return false;
+}
+
+Lexico::~Lexico() = default;
+
+Lexico::Lexico() = default;
+
+std::vector<Token> Lexico::get_tokens() {
+    return analisados;
 }
