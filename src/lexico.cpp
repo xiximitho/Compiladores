@@ -3,6 +3,8 @@
 //
 #include "lexico.h"
 #include <cstring>
+#include <utility>
+#include <iostream>
 
 bool Lexico::ehSimbolo(gchar ch)
 {
@@ -152,21 +154,58 @@ void Lexico::parse(gchar *str)
         {
             if (ehRelacional(str[atual], str[proximo + 1])) {
                 g_print("%c%c EH RELACIONAL\n", str[atual], str[proximo + 1]);
+                Glib::ustring tmp;
+                tmp.append(sizeof(gchar), str[atual]);
+                tmp.append(sizeof(gchar), str[proximo+1]);
+
                 proximo = proximo + 2;
                 atual = proximo;
+                if (tmp == "<>")
+                    analisados.push_back(novo_token(Token::RELACIONAL_DIFERENTE, tmp));
+                else if (tmp == ">=")
+                    analisados.push_back(novo_token(Token::RELACIONAL_MAIOR_IGUAL, tmp));
+                else if (tmp == "<=")
+                    analisados.push_back(novo_token(Token::RELACIONAL_MENOR_IGUAL, tmp));
             }
             else if (ehAtribuicao(str[atual], str[proximo + 1])) {
                 g_print("%c%c EH OPERADOR DE ATRIBUIÇÃO\n", str[atual], str[proximo + 1]);
+                analisados.push_back(novo_token(Token::ATRIBUICAO
+                                                ,Glib::ustring().append(sizeof(gchar)
+                                                                        ,str[atual]).append(sizeof(gchar), str[proximo+1])));
+
                 proximo = proximo + 2;
                 atual = proximo;
+
             }
             else {
                 if (ehOperador(str[proximo])) {
                     g_print("%c EH OPERADOR\n", str[proximo]);
+                    Glib::ustring tmp;
+                    tmp.append(sizeof(gchar), str[proximo]);
+
+                    if (tmp == "<")
+                        analisados.push_back(novo_token(Token::RELACIONAL_MENOR, tmp));
+                    else if (tmp == ">")
+                        analisados.push_back(novo_token(Token::RELACIONAL_MAIOR, tmp));
+                    else if (tmp == "=")
+                        analisados.push_back(novo_token(Token::RELACIONAL_IGUAL, tmp));
+                    else if (tmp == "+")
+                        analisados.push_back(novo_token(Token::ARITMETICO_SOMA, tmp));
+                    else if (tmp == "-")
+                        analisados.push_back(novo_token(Token::ARITMETICO_SUBTRACAO, tmp));
+                    else if (tmp == "*")
+                        analisados.push_back(novo_token(Token::ARITMETICO_MULTIPLICACAO, tmp));
+                    else if (tmp == "/")
+                        analisados.push_back(novo_token(Token::ARITMETICO_DIVISAO, tmp));
+
                 }
 
                 if (ehEspecial(str[proximo])) {
                     g_print("%c EH CARACTERE ESPECIAL\n", str[proximo]);
+                    if (str[proximo] == '(')
+                        analisados.push_back(novo_token(Token::ESPECIAL_ABRE_PARENTESES, Glib::ustring().append(sizeof(gchar), str[proximo])));
+                    else if (str[proximo] == ')')
+                        analisados.push_back(novo_token(Token::ESPECIAL_FECHA_PARENTESES, Glib::ustring().append(sizeof(gchar), str[proximo])));
                 }
                 proximo++;
                 atual = proximo;
@@ -179,8 +218,51 @@ void Lexico::parse(gchar *str)
             // Verifica se a substring é uma palavra reservada, identificador, string ou numero
             if (ehReservada(sub)) {
                 g_print("%s PALAVRA_RESERVADA\n", sub);
+                Glib::ustring tmp;
+                tmp = sub;
+                if (tmp == "begin")
+                    analisados.push_back(novo_token(Token::RESERVADA_BEGIN, tmp));
+                else if (tmp == "end")
+                    analisados.push_back(novo_token(Token::RESERVADA_END, tmp));
+                else if (tmp == "if")
+                    analisados.push_back(novo_token(Token::RESERVADA_IF, tmp));
+                else if (tmp == "then")
+                    analisados.push_back(novo_token(Token::RESERVADA_THEN, tmp));
+                else if (tmp == "else")
+                    analisados.push_back(novo_token(Token::RESERVADA_ELSE, tmp));
+                else if (tmp == "case")
+                    analisados.push_back(novo_token(Token::RESERVADA_CASE, tmp));
+                else if (tmp == "for")
+                    analisados.push_back(novo_token(Token::RESERVADA_FOR, tmp));
+                else if (tmp == "in")
+                    analisados.push_back(novo_token(Token::RESERVADA_IN, tmp));
+                else if (tmp == "and")
+                    analisados.push_back(novo_token(Token::RESERVADA_AND, tmp));
+                else if (tmp == "or")
+                    analisados.push_back(novo_token(Token::RESERVADA_OR, tmp));
+                else if (tmp == "const")
+                    analisados.push_back(novo_token(Token::RESERVADA_CONST, tmp));
+                else if (tmp == "string")
+                    analisados.push_back(novo_token(Token::RESERVADA_STRING, tmp));
+                else if (tmp == "double")
+                    analisados.push_back(novo_token(Token::RESERVADA_DOUBLE, tmp));
+                else if (tmp == "float")
+                    analisados.push_back(novo_token(Token::RESERVADA_FLOAT, tmp));
+                else if (tmp == "int")
+                    analisados.push_back(novo_token(Token::RESERVADA_INT, tmp));
+                else if (tmp == "long_int")
+                    analisados.push_back(novo_token(Token::RESERVADA_LONG_INT, tmp));
+                else if (tmp == "short_int")
+                    analisados.push_back(novo_token(Token::RESERVADA_SHORT_INT, tmp));
+                else if (tmp == "bool")
+                    analisados.push_back(novo_token(Token::RESERVADA_BOOL, tmp));
+                else if (tmp == "char")
+                    analisados.push_back(novo_token(Token::RESERVADA_CHAR, tmp));
+
+
             }
             else if (ehNumero(sub)) {
+                analisados.push_back(novo_token(Token::NUMERO, Glib::ustring(sub)));
                 g_print("%s NUMERO\n", sub);
             }
             else if (ehString(sub) == 2) {
@@ -191,6 +273,7 @@ void Lexico::parse(gchar *str)
                      !ehReservada(sub) &&
                      !ehSimbolo(str[proximo - 1])) {
                 g_print("%s IDENTIFICADOR VALIDO\n", sub);
+                analisados.push_back(novo_token(Token::IDENTIFICADOR, Glib::ustring(sub)));
             }
             else if (!identificadorValido(sub) &&
                      ehString(sub) != 0 || ehString(sub) != 2 &&
@@ -235,3 +318,149 @@ Lexico::Lexico() = default;
 std::vector<Token> Lexico::get_tokens() {
     return analisados;
 }
+
+Token Lexico::novo_token(Token::Tipo tipo, Glib::ustring conteudo) {
+    Token t;
+    t.set_conteudo(std::move(conteudo));
+    t.set_token(tipo);
+    return t;
+}
+
+void Token::set_conteudo(Glib::ustring cont) {
+    this->conteudo = std::move(cont);
+}
+
+void Token::set_token(Tipo tipo) {
+    this->tipo_token = tipo;
+}
+
+Glib::ustring Token::get_conteudo() {
+    return this->conteudo;
+}
+
+Token::~Token() = default;
+
+Token::Tipo Token::get_tipo() {
+    return this->tipo_token;
+}
+
+void Lexico::print_tokens(std::vector<Token> analisados) {
+
+    g_print("----PRINTANDO TOKENS----\n");
+    Glib::ustring tmp;
+    for (auto &t : analisados) {
+        switch (t.get_tipo()) {
+            case 0:
+                tmp = "ATRIBUICAO \n" ;
+                break;
+            case 1:
+                tmp = "ARITMETICO_SOMA \n" ;
+                break;
+            case 2:
+                tmp = "ARITMETICO_SUBTRACAO \n" ;
+                break;
+            case 3:
+                tmp = "ARITMETICO_MULTIPLICACAO \n" ;
+                break;
+            case 4:
+                tmp = "ARITMETICO_DIVISAO \n" ;
+                break;
+            case 5:
+                tmp = "RELACIONAL_IGUAL \n" ;
+                break;
+            case 6:
+                tmp = "RELACIONAL_DIFERENTE \n" ;
+                break;
+            case 7:
+                tmp = "RELACIONAL_MAIOR \n" ;
+                break;
+            case 8:
+                tmp = "RELACIONAL_MENOR \n" ;
+                break;
+            case 9:
+                tmp = "RELACIONAL_MAIOR_IGUAL \n" ;
+                break;
+            case 10:
+                tmp = "RELACIONAL_MENOR_IGUAL \n" ;
+                break;
+            case 11:
+                tmp = "ESPECIAL_ABRE_PARENTESES \n" ;
+                break;
+            case 12:
+                tmp = "ESPECIAL_FECHA_PARENTESES \n" ;
+                break;
+            case 13:
+                tmp = "SEPARADOR_PONTO_VIRGULA \n" ;
+                break;
+            case 14:
+                tmp = "SEPARADOR_VIRGULA \n" ;
+                break;
+            case 15:
+                tmp = "RESERVADA_BEGIN \n" ;
+                break;
+            case 16:
+                tmp = "RESERVADA_END \n" ;
+                break;
+            case 17:
+                tmp = "RESERVADA_IF \n" ;
+                break;
+            case 18:
+                tmp = "RESERVADA_THEN \n" ;
+                break;
+            case 19:
+                tmp = "RESERVADA_ELSE \n" ;
+                break;
+            case 20:
+                tmp = "RESERVADA_CASE \n" ;
+                break;
+            case 21:
+                tmp = "RESERVADA_FOR \n" ;
+                break;
+            case 22:
+                tmp = "RESERVADA_IN \n" ;
+                break;
+            case 23:
+                tmp = "RESERVADA_AND \n" ;
+                break;
+            case 24:
+                tmp = "RESERVADA_CONST \n" ;
+                break;
+            case 25:
+                tmp = "RESERVADA_STRING \n" ;
+                break;
+            case 26:
+                tmp = "RESERVADA_DOUBLE \n" ;
+                break;
+            case 27:
+                tmp = "RESERVADA_FLOAT \n" ;
+                break;
+            case 28:
+                tmp = "RESERVADA_INT \n" ;
+                break;
+            case 29:
+                tmp = "RESERVADA_LONG_INT \n" ;
+                break;
+            case 30:
+                tmp = "RESERVADA_SHORT_INT \n" ;
+                break;
+            case 31:
+                tmp = "RESERVADA_BOOL \n" ;
+                break;
+            case 32:
+                tmp = "RESERVADA_CHAR \n" ;
+                break;
+            case 33:
+                tmp = "RESERVADA_OR \n" ;
+                break;
+            case 34:
+                tmp = "IDENTIFICADOR \n" ;
+                break;
+            case 35:
+                tmp = "NUMERO \n" ;
+                break;
+        }
+        g_print("%s : %s", t.get_conteudo().c_str(), tmp.c_str());
+    }
+}
+
+Token::Token() = default;
