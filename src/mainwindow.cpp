@@ -92,7 +92,7 @@ void MainWindow::on_click_m_button_analisar ()
 
     analisador.parse ((gchar *)m_refTextBuffer->get_text().c_str());
     tokens = analisador.get_tokens();
-    if (tokens.size() > 0) {
+    if (!tokens.empty()) {
         m_label_Mensagem.set_text("Análise concluída com sucesso");
         m_infoBar.set_message_type(Gtk::MessageType::INFO);
         m_infoBar.show();

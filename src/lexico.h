@@ -51,6 +51,8 @@ public:
         //IDENTIFICADORES
         IDENTIFICADOR = 34,
         NUMERO = 35,
+
+        NADA = 36
     };
     Token();
     ~Token();
@@ -62,6 +64,8 @@ public:
 private:
     Tipo tipo_token;
     Glib::ustring conteudo;
+    int linha;
+    int coluna;
 };
 
 class Lexico {
@@ -75,7 +79,7 @@ public:
 private:
     std::vector<Token> analisados = {};
 
-    static Token novo_token(Token::Tipo tipo, Glib::ustring conteudo);
+    Token novo_token(Token::Tipo tipo, Glib::ustring conteudo);
     static bool ehSimbolo(gchar ch);
     static bool identificadorValido(gchar *str);
     static bool ehOperador(gchar ch);
@@ -87,6 +91,8 @@ private:
     static bool ehRelacional(gchar esquerda, gchar direita);
     static bool ehAtribuicao(gchar esquerda, gchar direita);
     static gchar *subString(const gchar *baseStr, int primeiro, int ultimo);
+
+    bool ehQuebra(gchar chr);
 };
 
 #endif //_LEXICO_H_

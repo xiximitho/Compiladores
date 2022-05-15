@@ -119,10 +119,12 @@ gchar * Lexico::subString(const gchar *baseStr, int primeiro, int ultimo)
 }
 
 //Identifica \n e \t para ser trocado para espaço
-
+bool Lexico::ehQuebra(gchar chr){
+    return (chr == '\n');
+}
 bool Lexico::ehEspaco(gchar chr)
 {
-    return (chr == '\n' || chr == '\t');
+    return (chr == '\t');
 }
 
 int Lexico::ehString(gchar *str)
@@ -141,7 +143,7 @@ void Lexico::parse(gchar *str)
     int atual = 0, proximo = 0;
     unsigned long len = strlen(str);
     while (proximo <= len && atual <= proximo) {
-        if (ehEspaco(str[proximo])) {
+        if (ehEspaco(str[proximo]) || ehQuebra(str[proximo])) {
             str[proximo] = ' ';
         }
         // Caso o caractere é um digito ou letra
@@ -170,8 +172,8 @@ void Lexico::parse(gchar *str)
             else if (ehAtribuicao(str[atual], str[proximo + 1])) {
                 g_print("%c%c EH OPERADOR DE ATRIBUIÇÃO\n", str[atual], str[proximo + 1]);
                 analisados.push_back(novo_token(Token::ATRIBUICAO
-                                                ,Glib::ustring().append(sizeof(gchar)
-                                                                        ,str[atual]).append(sizeof(gchar), str[proximo+1])));
+                        ,Glib::ustring().append(sizeof(gchar)
+                                ,str[atual]).append(sizeof(gchar), str[proximo+1])));
 
                 proximo = proximo + 2;
                 atual = proximo;
@@ -458,8 +460,10 @@ void Lexico::print_tokens(std::vector<Token> analisados) {
             case 35:
                 tmp = "NUMERO \n" ;
                 break;
+            case Token::NADA:
+                break;
         }
-        g_print("%s : %s", t.get_conteudo().c_str(), tmp.c_str());
+        g_print("%s : %s ", t.get_conteudo().c_str(), tmp.c_str());
     }
 }
 
