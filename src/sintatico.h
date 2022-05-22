@@ -14,7 +14,8 @@ class Sintatico {
 
     void analisar(std::vector<Token> pilha);
 private:
-    Token nextToken(std::vector<Token> pilha, int pos_atual);
+    static Token nextToken(std::vector<Token> pilha, int pos_atual);
+    static Token previousToken(std::vector<Token> pilha, int pos_atual);
     void error(std::string msg);
 };
 

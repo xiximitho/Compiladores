@@ -21,6 +21,8 @@ protected:
   void on_response_m_infobar(int response);
   void on_changed_m_reftextbuffer();
   void on_click_m_button_analisar();
+  void on_click_m_button_sair();
+  void on_click_m_button_fecharjanela();
 
   // Widgets.
   Gtk::Box m_VBox;
