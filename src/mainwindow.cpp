@@ -55,6 +55,7 @@ void MainWindow::set_layout() {
 
   m_infoBar.hide();
   m_button_Limpar.set_sensitive(false);
+
 }
 
 void MainWindow::set_slots() {
@@ -89,6 +90,7 @@ void MainWindow::on_click_m_button_limpar() {
   m_infoBar.show();
 }
 void MainWindow::on_click_m_button_analisar() {
+
   std::vector<Token> tokens;
   Lexico analisador;
   Sintatico sintatico;
@@ -99,6 +101,7 @@ void MainWindow::on_click_m_button_analisar() {
     m_infoBar.set_message_type(Gtk::MessageType::INFO);
     m_infoBar.show();
     //analisador.print_tokens(tokens);
+	//Limpar terminal
     sintatico.analisar(tokens);
 
   } else {

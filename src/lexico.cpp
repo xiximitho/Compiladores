@@ -142,7 +142,7 @@ void Lexico::parse(gchar *str) {
         atual == proximo)  // verifica se é um caractere de simbolos
     {
       if (ehRelacional(str[atual], str[proximo + 1])) {
-        g_print("%c%c EH RELACIONAL\n", str[atual], str[proximo + 1]);
+       // g_print("%c%c EH RELACIONAL\n", str[atual], str[proximo + 1]);
         Glib::ustring tmp;
         tmp.append(sizeof(gchar), str[atual]);
         tmp.append(sizeof(gchar), str[proximo + 1]);
@@ -156,8 +156,7 @@ void Lexico::parse(gchar *str) {
         else if (tmp == "<=")
           analisados.push_back(novo_token(Token::RELACIONAL_MENOR_IGUAL, tmp));
       } else if (ehAtribuicao(str[atual], str[proximo + 1])) {
-        g_print("%c%c EH OPERADOR DE ATRIBUIÇÃO\n", str[atual],
-                str[proximo + 1]);
+       // g_print("%c%c EH OPERADOR DE ATRIBUIÇÃO\n", str[atual], str[proximo + 1]);
         analisados.push_back(novo_token(
             Token::ATRIBUICAO, Glib::ustring()
                                    .append(sizeof(gchar), str[atual])
@@ -168,7 +167,7 @@ void Lexico::parse(gchar *str) {
 
       } else {
         if (ehOperador(str[proximo])) {
-          g_print("%c EH OPERADOR\n", str[proximo]);
+         // g_print("%c EH OPERADOR\n", str[proximo]);
           Glib::ustring tmp;
           tmp.append(sizeof(gchar), str[proximo]);
 
@@ -190,7 +189,7 @@ void Lexico::parse(gchar *str) {
         }
 
         if (ehEspecial(str[proximo])) {
-          g_print("%c EH CARACTERE ESPECIAL\n", str[proximo]);
+         // g_print("%c EH CARACTERE ESPECIAL\n", str[proximo]);
           if (str[proximo] == '(')
             analisados.push_back(novo_token(
                 Token::ESPECIAL_ABRE_PARENTESES,
@@ -209,7 +208,7 @@ void Lexico::parse(gchar *str) {
       // Verifica se a substring é uma palavra reservada, identificador, string
       // ou numero
       if (ehReservada(sub)) {
-        g_print("%s PALAVRA_RESERVADA\n", sub);
+       // g_print("%s PALAVRA_RESERVADA\n", sub);
         Glib::ustring tmp;
         tmp = sub;
         if (tmp == "begin")
@@ -253,18 +252,19 @@ void Lexico::parse(gchar *str) {
 
       } else if (ehNumero(sub)) {
         analisados.push_back(novo_token(Token::NUMERO, Glib::ustring(sub)));
-        g_print("%s NUMERO\n", sub);
+        //g_print("%s NUMERO\n", sub);
       } else if (ehString(sub) == 2) {
-        g_print("%s EH STRING\n", sub);
+        //g_print("%s EH STRING\n", sub);
       } else if (identificadorValido(sub) && ehString(sub) == 0 &&
                  !ehReservada(sub) && !ehSimbolo(str[proximo - 1])) {
-        g_print("%s IDENTIFICADOR VALIDO\n", sub);
+        //g_print("%s IDENTIFICADOR VALIDO\n", sub);
+
         analisados.push_back(
             novo_token(Token::IDENTIFICADOR, Glib::ustring(sub)));
       } else if (!identificadorValido(sub) && ehString(sub) != 0 ||
                  ehString(sub) != 2 && !ehReservada(sub) &&
                      !ehSimbolo(str[proximo - 1])) {
-        g_print("%s NAO EH UM IDENTIFICADOR VALIDO\n", sub);
+      //  g_print("%s NAO EH UM IDENTIFICADOR VALIDO\n", sub);
       }
 
       atual = proximo;

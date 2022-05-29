@@ -16,7 +16,12 @@ class Sintatico {
 private:
     static Token nextToken(std::vector<Token> pilha, int pos_atual);
     static Token previousToken(std::vector<Token> pilha, int pos_atual);
-    void error(std::string msg);
+
+    bool validar_prox_token(Token atual_token, Token prox_token, std::vector<Token> &controle, int pos);
+
+    static bool valida_declaracoes(Token t);
+    static bool valida_inicio_bloco(Token t);
+	static bool valida_relacionais(Token t);
 };
 
 
