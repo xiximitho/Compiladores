@@ -114,11 +114,17 @@ bool Sintatico::validar_prox_token(Token atual_token, Token prox_token,
       else {
         // Quando abre parentese, adiciona no vetor de controle pois necessita
         // de fechamento.
+        vector_controle.push_back(atual_token);
         vector_controle.push_back(prox_token);
       }
     }
     // PARENTESE INICIAL
     else if (atual_token.get_tipo() == Token::ESPECIAL_ABRE_PARENTESES) {
+      if (prox_token.get_tipo() != Token::IDENTIFICADOR &&
+          prox_token.get_tipo() != Token::NUMERO) {
+        throw std::invalid_argument("Identificador ou Numero");
+      }
+    } else if (Sintatico::valida_relacionais(atual_token)) {
       if (prox_token.get_tipo() != Token::IDENTIFICADOR &&
           prox_token.get_tipo() != Token::NUMERO) {
         throw std::invalid_argument("Identificador ou Numero");
@@ -129,11 +135,22 @@ bool Sintatico::validar_prox_token(Token atual_token, Token prox_token,
       if (!Sintatico::valida_relacionais(prox_token)) {
         throw std::invalid_argument("Condicional");
       }
-    } else if (Sintatico::valida_relacionais(atual_token)) {
-      if (prox_token.get_tipo() != Token::IDENTIFICADOR &&
-          prox_token.get_tipo() != Token::NUMERO) {
-        throw std::invalid_argument("Identificador ou Numero");
+    } else if (atual_token.get_tipo() == Token::ESPECIAL_FECHA_PARENTESES) {
+      vector_controle.pop_back();
+
+      if (vector_controle.back().get_tipo() == Token::RESERVADA_IF) {
+        if (prox_token.get_tipo() != Token::RESERVADA_THEN) {
+          throw std::invalid_argument("then");
+        }
+        std::cout << vector_controle.back().get_conteudo();
+        vector_controle.pop_back();
       }
+    }
+    // Validacao parentese aberto
+    else if (prox_token.get_tipo() == Token::RESERVADA_THEN &&
+             vector_controle.back().get_tipo() ==
+                 Token::ESPECIAL_ABRE_PARENTESES) {
+      throw std::invalid_argument("Fechamento Parentese");
     }
     return true;
   } catch (const std::invalid_argument& e) {
