@@ -30,6 +30,14 @@ void Sintatico::analisar(std::vector<Token> pilha) {
       break;
     }
   }
+  try {
+    if (!controle_vector.empty()){
+      throw std::runtime_error("Erro de sintaxe, esperava End");
+    }
+  }
+  catch (std::exception &e) {
+  std::cout << e.what() << std::endl;
+  }
 }
 
 Token Sintatico::nextToken(std::vector<Token> pilha, int pos_atual) {
@@ -39,18 +47,6 @@ Token Sintatico::nextToken(std::vector<Token> pilha, int pos_atual) {
     return pilha[pos_atual];
   } else {
     token.set_conteudo("EOF");
-    token.set_token(Token::NADA);
-    return token;
-  }
-}
-
-Token Sintatico::previousToken(std::vector<Token> pilha, int pos_atual) {
-  Token token;
-  pos_atual = pos_atual - 1;
-  if (pos_atual >= 0) {
-    return pilha[pos_atual];
-  } else {
-    token.set_conteudo("SOF");
     token.set_token(Token::NADA);
     return token;
   }
@@ -79,6 +75,11 @@ bool Sintatico::valida_relacionais(Token t) {
          t.get_tipo() == Token::RELACIONAL_DIFERENTE;
 }
 
+bool Sintatico::valida_operadores_logico(Token t) {
+  return t.get_tipo() == Token::RESERVADA_AND||
+         t.get_tipo() == Token::RESERVADA_OR;
+}
+
 bool Sintatico::validar_prox_token(Token atual_token, Token prox_token,
                                    std::vector<Token>& vector_controle,
                                    int pos) {
@@ -104,7 +105,8 @@ bool Sintatico::validar_prox_token(Token atual_token, Token prox_token,
     // ATRIBUIÇÃO
     else if (atual_token.get_tipo() == Token::ATRIBUICAO) {
       if (prox_token.get_tipo() != Token::NUMERO &&
-          prox_token.get_tipo() != Token::RESERVADA_CHAR)
+          prox_token.get_tipo() != Token::RESERVADA_CHAR &&
+          prox_token.get_tipo() != Token::IDENTIFICADOR)
         throw std::invalid_argument("Atribuicao");
     }
     // BLOCO INICIAL
@@ -118,23 +120,40 @@ bool Sintatico::validar_prox_token(Token atual_token, Token prox_token,
         vector_controle.push_back(prox_token);
       }
     }
+    else if (atual_token.get_tipo() == Token::RESERVADA_THEN){
+      vector_controle.push_back(atual_token);
+    }
     // PARENTESE INICIAL
     else if (atual_token.get_tipo() == Token::ESPECIAL_ABRE_PARENTESES) {
       if (prox_token.get_tipo() != Token::IDENTIFICADOR &&
           prox_token.get_tipo() != Token::NUMERO) {
         throw std::invalid_argument("Identificador ou Numero");
       }
-    } else if (Sintatico::valida_relacionais(atual_token)) {
+    } else if (Sintatico::valida_relacionais(atual_token) || Sintatico::valida_operadores_logico(atual_token)) {
       if (prox_token.get_tipo() != Token::IDENTIFICADOR &&
           prox_token.get_tipo() != Token::NUMERO) {
         throw std::invalid_argument("Identificador ou Numero");
       }
-    } else if (atual_token.get_tipo() == Token::IDENTIFICADOR &&
+    } else if (Sintatico::valida_operadores(atual_token)) {
+      if (prox_token.get_tipo() != Token::IDENTIFICADOR &&
+          prox_token.get_tipo() != Token::NUMERO) {
+        throw std::invalid_argument("Identificador ou Numero");
+      }
+    } else if ((atual_token.get_tipo() == Token::IDENTIFICADOR ||
+                atual_token.get_tipo() == Token::NUMERO)  &&
                vector_controle.back().get_tipo() ==
                    Token::ESPECIAL_ABRE_PARENTESES) {
-      if (!Sintatico::valida_relacionais(prox_token)) {
-        throw std::invalid_argument("Condicional");
-      }
+        if (prox_token.get_tipo() != Token::ESPECIAL_FECHA_PARENTESES){
+          if (!Sintatico::valida_relacionais(prox_token) &&
+              !Sintatico::valida_operadores(prox_token) &&
+              !Sintatico::valida_operadores_logico(prox_token)) {
+            if (prox_token.get_tipo() != Token::ESPECIAL_FECHA_PARENTESES){
+              throw std::invalid_argument("Fechamento de Parentese");
+            }
+            else
+              throw std::invalid_argument("Condicional ou Operador");
+          }
+        }
     } else if (atual_token.get_tipo() == Token::ESPECIAL_FECHA_PARENTESES) {
       vector_controle.pop_back();
 
@@ -152,6 +171,16 @@ bool Sintatico::validar_prox_token(Token atual_token, Token prox_token,
                  Token::ESPECIAL_ABRE_PARENTESES) {
       throw std::invalid_argument("Fechamento Parentese");
     }
+
+    else
+    if (atual_token.get_tipo() == Token::RESERVADA_END) {
+        // Quando fecha bloco end, remove do vetor de controle.
+        if (vector_controle.back().get_tipo() == Token::RESERVADA_THEN || vector_controle.back().get_tipo() == Token::RESERVADA_BEGIN) {
+          vector_controle.pop_back();
+        }
+    }
+
+
     return true;
   } catch (const std::invalid_argument& e) {
     std::cout << "Lido "
@@ -162,4 +191,10 @@ bool Sintatico::validar_prox_token(Token atual_token, Token prox_token,
               << "\033[1;31m" << prox_token.get_conteudo() << "\033[0m\n";
     return false;
   }
+}
+bool Sintatico::valida_operadores(Token token) {
+  return token.get_tipo() == Token::ARITMETICO_DIVISAO ||
+         token.get_tipo() == Token::ARITMETICO_MULTIPLICACAO ||
+         token.get_tipo() == Token::ARITMETICO_SOMA ||
+         token.get_tipo() == Token::ARITMETICO_SUBTRACAO;
 }
