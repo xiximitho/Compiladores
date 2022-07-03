@@ -27,7 +27,7 @@ void Sintatico::analisar(std::vector<Token> pilha) {
                            controle_vector, pos)) {
       pos++;
     } else {
-      break;
+      pos++;
     }
   }
   try {

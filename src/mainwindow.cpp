@@ -84,13 +84,13 @@ void MainWindow::on_response_m_infobar(int) {
 
 void MainWindow::on_click_m_button_limpar() {
   m_refTextBuffer->set_text("");
-
   m_label_Mensagem.set_text("Texto limpo");
   m_infoBar.set_message_type(Gtk::MessageType::INFO);
   m_infoBar.show();
 }
 void MainWindow::on_click_m_button_analisar() {
 
+  printf("\033[2J");
   std::vector<Token> tokens;
   Lexico analisador;
   Sintatico sintatico;
