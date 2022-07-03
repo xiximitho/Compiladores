@@ -17,7 +17,7 @@ MainWindow::MainWindow()
   set_slots();
 }
 void MainWindow::set_layout() {
-  set_title("Analisador Léxico");
+  set_title("Analisador Léxico e Sintático");
   set_default_size(1000, 600);
 
   m_VBox.set_margin(6);

@@ -164,13 +164,18 @@ bool Sintatico::validar_prox_token(Token atual_token, Token prox_token,
         //std::cout << vector_controle.back().get_conteudo();
         vector_controle.pop_back();
       }
+      else if (vector_controle.back().get_tipo() == Token::RESERVADA_FOR){
+        if (prox_token.get_tipo() != Token::RESERVADA_THEN){
+          throw std::invalid_argument("then");
+        }
+        vector_controle.pop_back();
+      }
     }
     /*else if (atual_token.get_tipo() == Token::NUMERO
              atual_token.get_tipo() == Token::IDENTIFICADOR) nn compila pls*/
     // Validacao parentese aberto
     else if (prox_token.get_tipo() == Token::RESERVADA_THEN &&
-             vector_controle.back().get_tipo() ==
-                 Token::ESPECIAL_ABRE_PARENTESES) {
+             vector_controle.back().get_tipo() == Token::ESPECIAL_ABRE_PARENTESES) {
       throw std::invalid_argument("Fechamento Parentese");
     }
 
