@@ -101,7 +101,7 @@ void MainWindow::on_click_m_button_analisar() {
     m_infoBar.set_message_type(Gtk::MessageType::INFO);
     m_infoBar.show();
     //analisador.print_tokens(tokens);
-	//Limpar terminal
+
     sintatico.analisar(tokens);
 
   } else {

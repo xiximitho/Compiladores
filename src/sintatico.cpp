@@ -161,10 +161,12 @@ bool Sintatico::validar_prox_token(Token atual_token, Token prox_token,
         if (prox_token.get_tipo() != Token::RESERVADA_THEN) {
           throw std::invalid_argument("then");
         }
-        std::cout << vector_controle.back().get_conteudo();
+        //std::cout << vector_controle.back().get_conteudo();
         vector_controle.pop_back();
       }
     }
+    /*else if (atual_token.get_tipo() == Token::NUMERO
+             atual_token.get_tipo() == Token::IDENTIFICADOR) nn compila pls*/
     // Validacao parentese aberto
     else if (prox_token.get_tipo() == Token::RESERVADA_THEN &&
              vector_controle.back().get_tipo() ==
